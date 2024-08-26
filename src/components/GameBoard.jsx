@@ -75,6 +75,12 @@ const GameBoard = () => {
           move: direction,
         })
       );
+
+      // Update move history
+      const newMoveHistory = { ...moveHistory };
+      newMoveHistory[currentPlayer].push(`${selectedPiece.piece}: ${direction}`);
+      setMoveHistory(newMoveHistory);
+
       setSelectedPiece(null);
       setValidMoves([]);
     }
@@ -191,31 +197,33 @@ const GameBoard = () => {
                 <button key={index} onClick={() => handleMove(move)}>
                   {move.deltaRow === 0 && move.deltaCol === 1 && 'Right'}
                   {move.deltaRow === 0 && move.deltaCol === -1 && 'Left'}
-                  {move.deltaRow === 1 && move.deltaCol === 0 && 'Forward'}
-                  {move.deltaRow === -1 && move.deltaCol === 0 && 'Backward'}
+                  {move.deltaRow === -1 && move.deltaCol === 0 && 'Up'}
+                  {move.deltaRow === 1 && move.deltaCol === 0 && 'Down'}
                 </button>
               ))}
             </div>
-            <button onClick={handleNewGame}>New Game</button>
-            <div>
-              <h3>Move History</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Player A Moves</th>
-                    <th>Player B Moves</th>
+          </div>
+          <button onClick={handleNewGame}>New Game</button>
+
+          {/* Display Move History */}
+          <div style={{ marginTop: '20px' }}>
+            <h3>Move History</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Player A</th>
+                  <th>Player B</th>
+                </tr>
+              </thead>
+              <tbody>
+                {moveHistory.A.map((move, index) => (
+                  <tr key={index}>
+                    <td>{move}</td>
+                    <td>{moveHistory.B[index]}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {Array(Math.max(moveHistory.A.length, moveHistory.B.length)).fill().map((_, index) => (
-                    <tr key={index}>
-                      <td>{moveHistory.A[index] || ''}</td>
-                      <td>{moveHistory.B[index] || ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
