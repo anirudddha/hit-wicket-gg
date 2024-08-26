@@ -21,5 +21,3 @@ const GameCell = ({ cell, onClick }) => {
 };
 
 export default GameCell;
-
-

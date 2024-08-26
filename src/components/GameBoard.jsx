@@ -11,7 +11,7 @@ const GameBoard = () => {
   const [playerBSetup, setPlayerBSetup] = useState(['', '', '', '', '']);
   const [validMoves, setValidMoves] = useState([]);
   const [winner, setWinner] = useState(null);
-  const [moveHistory, setMoveHistory] = useState({ A: [], B: [] }); // Move history state
+  const [moveHistory, setMoveHistory] = useState({ A: [], B: [] }); // Initialize properly
 
   const { sendMessage, lastMessage } = useWebSocket('ws://localhost:8080');
 
@@ -21,30 +21,30 @@ const GameBoard = () => {
       console.log('Received from server:', data);
 
       if (data.type === 'init') {
-        setGameState(data.gameState.board);
-        setCurrentPlayer(data.gameState.currentPlayer);
-        setMoveHistory(data.gameState.moveHistory); // Set move history
+        setGameState(data.gameState.board || Array.from({ length: 5 }, () => Array(5).fill(null)));
+        setCurrentPlayer(data.gameState.currentPlayer || 'A');
+        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] }); // Ensure moveHistory is initialized
         setSetupMode(true);
         setValidMoves([]);
         setWinner(null);
       }
 
       if (data.type === 'update') {
-        setGameState(data.gameState.board);
-        setCurrentPlayer(data.gameState.currentPlayer);
-        setMoveHistory(data.gameState.moveHistory); // Update move history
+        setGameState(data.gameState.board || Array.from({ length: 5 }, () => Array(5).fill(null)));
+        setCurrentPlayer(data.gameState.currentPlayer || 'A');
+        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] }); // Ensure moveHistory is updated
         setSetupMode(false);
         setValidMoves([]);
         setWinner(null);
       }
 
       if (data.type === 'win') {
-        setWinner(data.winner);
+        setWinner(data.winner || null);
         setTimeout(() => {
           setGameState(Array.from({ length: 5 }, () => Array(5).fill(null)));
           setPlayerASetup(['', '', '', '', '']);
           setPlayerBSetup(['', '', '', '', '']);
-          setMoveHistory({ A: [], B: [] }); // Reset move history
+          setMoveHistory({ A: [], B: [] }); // Reset moveHistory
           setSetupMode(true);
           setWinner(null);
           setValidMoves([]);
@@ -114,7 +114,7 @@ const GameBoard = () => {
     setPlayerASetup(['', '', '', '', '']);
     setPlayerBSetup(['', '', '', '', '']);
     setGameState(Array.from({ length: 5 }, () => Array(5).fill(null)));
-    setMoveHistory({ A: [], B: [] }); // Reset move history
+    setMoveHistory({ A: [], B: [] }); // Reset moveHistory
     sendMessage(JSON.stringify({ type: 'reset' }));
   };
 
@@ -170,10 +170,6 @@ const GameBoard = () => {
                   {move.deltaRow === 0 && move.deltaCol === -1 && 'Left'}
                   {move.deltaRow === 1 && move.deltaCol === 0 && 'Forward'}
                   {move.deltaRow === -1 && move.deltaCol === 0 && 'Backward'}
-                  {move.deltaRow === 1 && move.deltaCol === 1 && 'Forward-Right'}
-                  {move.deltaRow === -1 && move.deltaCol === -1 && 'Backward-Left'}
-                  {move.deltaRow === 1 && move.deltaCol === -1 && 'Backward-Left'}
-                  {move.deltaRow === -1 && move.deltaCol === 1 && 'Forward-Right'}
                 </button>
               ))}
             </div>
@@ -188,8 +184,9 @@ const GameBoard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.from({ length: Math.max(moveHistory.A.length, moveHistory.B.length) }).map((_, index) => (
+                  {Array.from({ length: Math.max(moveHistory.A?.length || 0, moveHistory.B?.length || 0) }).map((_, index) => (
                     <tr key={index}>
+                      {/* Safely access moveHistory.A and moveHistory.B */}
                       <td>{moveHistory.A[index] || ''}</td>
                       <td>{moveHistory.B[index] || ''}</td>
                     </tr>
