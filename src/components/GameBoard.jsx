@@ -35,7 +35,7 @@ const GameBoard = () => {
         setMoveHistory(data.gameState.moveHistory || { A: [], B: [] }); // Ensure moveHistory is updated
         setSetupMode(false);
         setValidMoves([]);
-        setWinner(null);
+        checkForWinner(data.gameState.board); // Check for winner on board update
       }
 
       if (data.type === 'win') {
@@ -118,6 +118,25 @@ const GameBoard = () => {
     sendMessage(JSON.stringify({ type: 'reset' }));
   };
 
+  const checkForWinner = (board) => {
+    let piecesA = 0;
+    let piecesB = 0;
+    board.forEach(row => {
+      row.forEach(cell => {
+        if (cell && cell.startsWith('A-')) piecesA++;
+        if (cell && cell.startsWith('B-')) piecesB++;
+      });
+    });
+
+    if (piecesA === 0 && piecesB > 0) {
+      setWinner('B');
+      sendMessage(JSON.stringify({ type: 'win', winner: 'B' }));
+    } else if (piecesB === 0 && piecesA > 0) {
+      setWinner('A');
+      sendMessage(JSON.stringify({ type: 'win', winner: 'A' }));
+    }
+  };
+
   return (
     <div>
       {winner && <h2>Player {winner} Wins!</h2>}
@@ -184,9 +203,8 @@ const GameBoard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.from({ length: Math.max(moveHistory.A?.length || 0, moveHistory.B?.length || 0) }).map((_, index) => (
+                  {Array(Math.max(moveHistory.A.length, moveHistory.B.length)).fill().map((_, index) => (
                     <tr key={index}>
-                      {/* Safely access moveHistory.A and moveHistory.B */}
                       <td>{moveHistory.A[index] || ''}</td>
                       <td>{moveHistory.B[index] || ''}</td>
                     </tr>
