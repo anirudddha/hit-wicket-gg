@@ -11,7 +11,7 @@ const GameBoard = () => {
   const [playerBSetup, setPlayerBSetup] = useState(['', '', '', '', '']);
   const [validMoves, setValidMoves] = useState([]);
   const [winner, setWinner] = useState(null);
-  const [moveHistory, setMoveHistory] = useState({ A: [], B: [] }); // Initialize properly
+  const [moveHistory, setMoveHistory] = useState({ A: [], B: [] });
 
   const { sendMessage, lastMessage } = useWebSocket('ws://localhost:8080');
 
@@ -23,7 +23,7 @@ const GameBoard = () => {
       if (data.type === 'init') {
         setGameState(data.gameState.board || Array.from({ length: 5 }, () => Array(5).fill(null)));
         setCurrentPlayer(data.gameState.currentPlayer || 'A');
-        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] }); // Ensure moveHistory is initialized
+        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] });
         setSetupMode(true);
         setValidMoves([]);
         setWinner(null);
@@ -32,10 +32,10 @@ const GameBoard = () => {
       if (data.type === 'update') {
         setGameState(data.gameState.board || Array.from({ length: 5 }, () => Array(5).fill(null)));
         setCurrentPlayer(data.gameState.currentPlayer || 'A');
-        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] }); // Ensure moveHistory is updated
+        setMoveHistory(data.gameState.moveHistory || { A: [], B: [] });
         setSetupMode(false);
         setValidMoves([]);
-        checkForWinner(data.gameState.board); // Check for winner on board update
+        checkForWinner(data.gameState.board);
       }
 
       if (data.type === 'win') {
@@ -44,7 +44,7 @@ const GameBoard = () => {
           setGameState(Array.from({ length: 5 }, () => Array(5).fill(null)));
           setPlayerASetup(['', '', '', '', '']);
           setPlayerBSetup(['', '', '', '', '']);
-          setMoveHistory({ A: [], B: [] }); // Reset moveHistory
+          setMoveHistory({ A: [], B: [] });
           setSetupMode(true);
           setWinner(null);
           setValidMoves([]);
@@ -93,17 +93,15 @@ const GameBoard = () => {
     const piece = gameState[row][col];
   
     if (piece.startsWith('A-')) {
-      // Player A moves
-      if (row > 0) moves.push({ deltaRow: -1, deltaCol: 0 }); // Forward
-      if (row < 4) moves.push({ deltaRow: 1, deltaCol: 0 });  // Backward
-      if (col > 0) moves.push({ deltaRow: 0, deltaCol: -1 }); // Left
-      if (col < 4) moves.push({ deltaRow: 0, deltaCol: 1 });  // Right
+      if (row > 0) moves.push({ deltaRow: -1, deltaCol: 0 });
+      if (row < 4) moves.push({ deltaRow: 1, deltaCol: 0 });
+      if (col > 0) moves.push({ deltaRow: 0, deltaCol: -1 });
+      if (col < 4) moves.push({ deltaRow: 0, deltaCol: 1 });
     } else if (piece.startsWith('B-')) {
-      // Player B moves
-      if (row < 4) moves.push({ deltaRow: 1, deltaCol: 0 });  // Forward
-      if (row > 0) moves.push({ deltaRow: -1, deltaCol: 0 }); // Backward
-      if (col < 4) moves.push({ deltaRow: 0, deltaCol: 1 });  // Right
-      if (col > 0) moves.push({ deltaRow: 0, deltaCol: -1 }); // Left
+      if (row < 4) moves.push({ deltaRow: 1, deltaCol: 0 });
+      if (row > 0) moves.push({ deltaRow: -1, deltaCol: 0 });
+      if (col < 4) moves.push({ deltaRow: 0, deltaCol: 1 });
+      if (col > 0) moves.push({ deltaRow: 0, deltaCol: -1 });
     }
   
     setValidMoves(moves);
@@ -114,8 +112,14 @@ const GameBoard = () => {
     setPlayerASetup(['', '', '', '', '']);
     setPlayerBSetup(['', '', '', '', '']);
     setGameState(Array.from({ length: 5 }, () => Array(5).fill(null)));
-    setMoveHistory({ A: [], B: [] }); // Reset moveHistory
+    setMoveHistory({ A: [], B: [] });
+    setWinner(null);
+
+    // Notify server about new game
     sendMessage(JSON.stringify({ type: 'reset' }));
+
+    // Refresh the entire page
+    window.location.reload();
   };
 
   const checkForWinner = (board) => {
